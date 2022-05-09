@@ -19,7 +19,7 @@ The LUMOS software comes with a GUI and an editor, allowing to create room geome
     * Type: “plotciexy” in the command window
     * A plot of the CIE x and y chromaticity should appear
 *Start LUMOS by:
-    * Type ```LUMOS in the command window,
+    * Type ```LUMOS``` in the command window,
     * or open the “spec_simulation.m” script file and click on the Run script button.
 
 # How to cite:
