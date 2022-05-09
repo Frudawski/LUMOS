@@ -9,7 +9,7 @@ LUMOS uses the [Lighting Toolbox for Matlab and Octave](https://www.frudawski.de
 
 LUMOS comes with a number of different [spectral reflectance and transmittance material](https://depositonce.tu-berlin.de/handle/11303/13097.2) samples.
 
-## LUMOS setup
+## LUMOS setup:
 
 * Download LUMOS and move it to a location of your choice.
 * Start Matlab
@@ -27,7 +27,7 @@ LUMOS comes with a number of different [spectral reflectance and transmittance m
 ### LUMOS:
 Rudawski, Frederic, *The spectral radiosity simulation program LUMOS for lighting research applications*, version 1.0, 2022, URL: www.frudawski.de/LUMOS
 
-### Lighting toolbox:
+### Lighting Toolbox:
 Rudawski, Frederic, *Lighting Toolbox for Matlab and Octave*, 2022, version 1.0, URL: www.frudawski.de/LightingToolbox
 
 ### LUMOS accuracy:
