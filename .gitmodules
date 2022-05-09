@@ -1,0 +1,3 @@
+[submodule "LightingToolbox"]
+	path = LightingToolbox
+	url = https://github.com/Frudawski/LightingToolbox
