@@ -23,7 +23,7 @@ LUMOS was [tested against several CIE 171](https://www.db-thueringen.de/receive/
 
 ## How to cite:
 ### LUMOS:
-Rudawski, Frederic, The spectral radiosity simulation program LUMOS for lighting research applications, version 1.0, 2022, www.frudawski.de/LUMOS
+Rudawski, Frederic, The spectral radiosity simulation program LUMOS for lighting research applications, version 1.0, 2022, URL: www.frudawski.de/LUMOS
 
 ### Lighting toolbox:
 Rudawski, Frederic, Lighting Toolbox for Matlab and Octave, 2022, version 1.0, URL: www.frudawski.de/LightingToolbox
