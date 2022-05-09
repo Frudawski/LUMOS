@@ -5,7 +5,7 @@ To use LUMOS a Matlab license is required. The LUMOS software comes with a GUI a
 
 LUMOS uses the [Lighting Toolbox for Matlab and Octave](www.frudawski.de/LightingToolbox) for various calculations and plots and will not function without it.
 
-LUMOS was [tested against several CIE 171](10.22032/dbt.49331) test scenarious for lighting simulation software and achieved good accuracy.
+LUMOS was [tested against several CIE 171](https://www.db-thueringen.de/receive/dbt_mods_00049331) test scenarious for lighting simulation software and achieved good accuracy.
 
 ## LUMOS setup
 
