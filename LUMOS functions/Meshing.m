@@ -1,4 +1,4 @@
-% Mesh function
+% LUMOS Mesh function
 %
 % Author: Frederic Rudawski
 % Date: 08.11.2017 - last updated: 05.10.2021
@@ -53,8 +53,6 @@ if ~isnan(elevation) && ~isequal(elevation,0)
         R = rotMatrix([0 rad2deg(pi/2) 0]);
     else
         rotax = cross(normal,[0 0 1]);
-        %R = makehgtform('axisrotate',rotax,-elevation);
-        %R = R(1:3,1:3);
         R = rotMatrixD(rotax,rad2deg(elevation));
         
         %{
@@ -101,7 +99,6 @@ else
     newsurf.vertices = [px py pz];
 end
 
-%newnorm = normalv(newsurf.vertices);
 newnorm = (R*([surface.normal]'))';
 if any(isnan(newnorm))
     newnorm = [0 0 0];
@@ -122,8 +119,6 @@ end
 [azimuth,~,~] = cart2sph(newnorm(1),newnorm(2),newnorm(3));
 
 if ~isequal(mod(azimuth,pi),0)
-    %P = makehgtform('axisrotate',[0 0 1],-azimuth);
-    %P = P(1:3,1:3);
     P = rotMatrix([0 0 rad2deg(-azimuth)]);
     % rotate
     a = P*[px py pz]';
@@ -210,10 +205,7 @@ for i = 1:numel(pz)-1
         m = 2;
     end
     n = m-1;
-    %if isempty(m)
-    %    m=3;
-    %    n=2;
-    %end
+
     z = linspace(pz(i),pz(i+1),m);
     y = linspace(r(i),r(i+1),m);
     borderz = [borderz z];
@@ -273,11 +265,7 @@ if ~strcmp(surface.type,'luminaire')
         [alpha,theta] = meshgrid(15:27.5:345,15:27.5:345);
         theta(:,2:4:end) = theta(:,2:4:end)+11.25;
         theta(:,4:4:end) = theta(:,4:4:end)+11.25;
-        %alpha = unique(luminaires{L}.ldt.anglesC(:));
-        %alpha = linspace(min(alpha),max(alpha),13);
-        %theta = unique(luminaires{L}.ldt.anglesG(:));
-        %theta = linspace(min(theta),max(theta),10);
-        %[alpha,theta] = meshgrid(alpha,theta);
+
         alpha = deg2rad(alpha);
         theta = deg2rad(theta);
         [Lx,Ly,Lz] = sph2cart(alpha(:),theta(:),ones(size(alpha(:))));
@@ -286,14 +274,11 @@ if ~strcmp(surface.type,'luminaire')
         Ly = Lxyz(:,2);
         Lz = Lxyz(:,3);
         % intersection calculation parameters
-        % luminaires{L}.coordinates
         p = dot(luminaires{L}.coordinates,n);
         vecr = dot([Lx Ly Lz],repmat(n,size(Lx,1),1),2);
         para = -p./vecr;
         S = (para.*[Lx,Ly,Lz]);
         % intersection points
-        %lumrayx = [lumrayx;S(:,3)];
-        %lumrayz = [lumrayz;S(:,2)];
         lumrayx = [lumrayx;S(:,2)+luminaires{L}.coordinates(2)];
         lumrayz = [lumrayz;S(:,3)+luminaires{L}.coordinates(3)];
         
@@ -304,14 +289,17 @@ if ~strcmp(surface.type,'luminaire')
         plot3(luminaires{L}.coordinates(1),luminaires{L}.coordinates(2),luminaires{L}.coordinates(3),'r*')
         plot3(Lx+luminaires{L}.coordinates(1),Ly+luminaires{L}.coordinates(2),Lz+luminaires{L}.coordinates(3),'r.')
     end
-        %}
+    %}
+
     end
+
     ind = lumrayx>min(py) & lumrayx<max(py);
     lumrayx = lumrayx(ind);
     lumrayz = lumrayz(ind);
     ind = lumrayz>min(pz) & lumrayz<max(pz);
     lumrayx = lumrayx(ind);
     lumrayz = lumrayz(ind);
+
 end
 
 
@@ -369,8 +357,6 @@ orayz = orayz(ind);
 % finding gridpoints inside of the surface polygon
 x = [bordery';y1(:);y2(:);nbordery';lumrayx;orayx];
 z = [borderz';z1(:);z2(:);nborderz';lumrayz;orayz];
-
-
 
 %{
     % debuging
@@ -626,11 +612,9 @@ function plot_mesh_3D(wall)
 dt.Points = wall.mesh.points;
 dt.ConnectivityList = wall.mesh.list;
 
-%cla
 hold on
 grid on
 axis equal
-%axis off
 
 datax = [dt.Points(dt.ConnectivityList(:,1),1) dt.Points(dt.ConnectivityList(:,2),1) dt.Points(dt.ConnectivityList(:,3),1) dt.Points(dt.ConnectivityList(:,1),1)];
 datay = [dt.Points(dt.ConnectivityList(:,1),2) dt.Points(dt.ConnectivityList(:,2),2) dt.Points(dt.ConnectivityList(:,3),2) dt.Points(dt.ConnectivityList(:,1),2)];

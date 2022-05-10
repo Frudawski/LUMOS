@@ -1,14 +1,14 @@
 % Angular distance on hemisphere
 %
 % usage:
-% [X,idx] = hemdistd(az1,el1,az2,el2,n)
+% [X,idx] = sorthemdistd(az1,el1,az2,el2,n)
 %
 % with: X = angular distance
 %
 % Author: Frederic Rudawski
 % Date: 18.06.2021, last update: 30.11.2021
 
-function [d,p] = hemdistd(az1,el1,az2,el2,n)
+function [d,p] = sorthemdistd(az1,el1,az2,el2,n)
 
 if ~exist('n','var')
     n = max([numel(az1) numel(az2)]); 

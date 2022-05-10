@@ -1,4 +1,4 @@
-% luminaire radiant intensitiy I_e in observer direction
+% luminaire radiant intensitiy from LDC I_e in observer direction
 
 function [Iv,Ev] = ldc2IE(luminaires,observer)
 

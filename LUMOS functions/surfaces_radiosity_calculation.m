@@ -3,8 +3,6 @@
 % Author: Frederic Rudawski
 % Date: 10-11-2017, last edited: 04.06.2020
 %
-% UNFINISHED INFO
-%
 % A indoor radiosity calculation model for spectral data
 %
 % The surface data is first divided into mesh patches which are used for the
@@ -929,7 +927,7 @@ try
                     % irradiance
                     E = vis.* lumspec(:,lumidx).*(sind(ang2))./(R.^2).*ACS;
                     E(isnan(E)) = 0;
-                    % radiosity
+                    % radiance
                     %L = E.*room{r}.walls{wall}.material.data(2,wallind);
                     
                     % save results
@@ -1387,8 +1385,7 @@ try
         catcher(me)
     end
     %end
-    
-    % end
+    %end
     %end
     
     waitbar(step / steps,wbh,'Radiosity calculation finished.');

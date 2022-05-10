@@ -376,7 +376,6 @@ if ~DF
             %[Iaz Iel I]
             
             %{
-    comeback('luminaire I...')
     figure(2)
     
     h = sind(luminaires{lum}.ldt.anglesG).*luminaires{lum}.ldt.I.*luminaires{lum}.dimming;

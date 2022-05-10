@@ -21,7 +21,7 @@ for i = 1:size(edges,1)
         T2 = T2c(sum(ismember(T2c,T1c),2)==2,:);
         % triangle switch cases
         if isempty(T1) && isempty(T2) % more than two triangles to be switched
-            dummy = 1;
+            %dummy = 1;
             % NOT FINISHED... maybe obsolete
             % idea was to delete triangles and make a new triangulation with
             % a forced triangle that contain the forced edge
