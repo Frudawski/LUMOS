@@ -28,7 +28,7 @@ To use LUMOS, a Matlab license is required. The LUMOS software comes with a GUI 
 Rudawski, Frederic, *The spectral radiosity simulation program LUMOS for lighting research applications*, version 1.0, 2022, URL: www.frudawski.de/LUMOS
 
 ### Lighting Toolbox:
-Rudawski, Frederic, *Lighting Toolbox for Matlab and Octave*, 2022, version 1.0, URL: www.frudawski.de/LightingToolbox
+Rudawski, Frederic, *Lighting Toolbox for Matlab and Octave*, 2022, version 1.01, URL: www.frudawski.de/LightingToolbox
 
 ### LUMOS accuracy:
 Rudawski, Frederic; Knoop, Martine, *Validation of the spectral radiosity calculation tool LUMOS in regards to the CIE TR 171 test scenarios for lighting simulation software*,  In: Tagungsband Lux junior 2021, pp. 225-248, Digitale Bibliothek Thüringen, 2021. DOI: 10.22032/dbt.49331
