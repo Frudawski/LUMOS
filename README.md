@@ -61,6 +61,7 @@ LUMOS workflow is from left to right in the tab menu.
    * First load daylight data by using the "load sky data" tool in the toolbar, you can select multiple files in one go.
    * Note: LUMOS calculates the entire scenes for each daylight data set, and so increasing computation time.
    * Daylight data is provided in txt file format for Tregenza hemisphere data with 145 patches row-wise. First row gives the wavelength, the next 145 rows give the spectral radiance of the 145 Tregenza patches.
+   * The Lighting Toolbox function specsky can be used to create spectral daylight radiance data for testing purposes.
 * Add lumnaires (in luminaire menu):
    * Artificial lighting is optional.
    * First add luminaires by using the "add luminaire" tool in the toolbar.
