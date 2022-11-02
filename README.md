@@ -11,6 +11,7 @@ To use LUMOS, a Matlab license is required. The LUMOS software comes with a GUI 
 
 ## LUMOS setup:
 
+* Get the LightingToolbox from [here](https://github.com/Frudawski/LightingToolbox)
 * Download LUMOS and move it to a location of your choice.
 * Start Matlab
 * Add LUMOS to Matlab’s search path:
