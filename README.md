@@ -89,7 +89,7 @@ LUMOS workflow is from left to right in the tab menu.
 
 ## How to cite:
 ### LUMOS:
-Rudawski, Frederic, *The spectral radiosity simulation program LUMOS for lighting research applications*, version 1.0, 2022, URL: www.frudawski.de/LUMOS
+Rudawski, Frederic, *The spectral radiosity simulation program LUMOS for lighting research applications*, version 1.02, 2022, URL: www.frudawski.de/LUMOS
 
 ### Lighting Toolbox:
 Rudawski, Frederic, *Lighting Toolbox for Matlab and Octave*, 2022, URL: www.frudawski.de/LightingToolbox
