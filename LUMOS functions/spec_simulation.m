@@ -5500,7 +5500,7 @@ catch
 end
 
 for m = 1:size(data,2)
-    list{m,1} = data{m}.cellfield;
+    list{m,1} = data{m}.name{1}; % cellfield; ?
     
     list{m,3} = data{m}.range{:};
     %rho = ciespec2Y(mat.data(1,:),mat.data(2,:),1)/100;

@@ -11,6 +11,7 @@ else
     plot_rgb = 0;
 end
 
+L = data.L;
 if size(L,1)<size(L,2)
     L = L';
 end
