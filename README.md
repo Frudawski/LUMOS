@@ -3,7 +3,7 @@
 LUMOS is a spectral radiosity lighting simulation tool written in Matlab. It allows for spectral and spatial evaluation in arbitrary points and directions.
 To use LUMOS, a Matlab license is required. The LUMOS software comes with a GUI and an editor, allowing to create room geometries, add objects and luminaires, apply material data, luminaire data and daylight data as well as review the simulation results and export any data or illustrations.
 
-* LUMOS uses the [Lighting Toolbox for Matlab and Octave](https://frudawski.de/ligthing-toolbox/) for various calculations and plots and will not function without it.
+* LUMOS uses the [Lighting Toolbox for Matlab and Octave](https://frudawski.de/lighting-toolbox/) for various calculations and plots and will not function without it.
 
 * [LUMOS was tested against several CIE 171 test scenarious for lighting simulation software](https://www.db-thueringen.de/receive/dbt_mods_00049331) and achieved good accuracy.
 
@@ -11,6 +11,7 @@ To use LUMOS, a Matlab license is required. The LUMOS software comes with a GUI 
 
 ## LUMOS setup:
 
+* Get the LightingToolbox from [here](https://github.com/Frudawski/LightingToolbox)
 * Download LUMOS and move it to a location of your choice.
 * Start Matlab
 * Add LUMOS to Matlab’s search path:
@@ -61,6 +62,7 @@ LUMOS workflow is from left to right in the tab menu.
    * First load daylight data by using the "load sky data" tool in the toolbar, you can select multiple files in one go.
    * Note: LUMOS calculates the entire scenes for each daylight data set, and so increasing computation time.
    * Daylight data is provided in txt file format for Tregenza hemisphere data with 145 patches row-wise. First row gives the wavelength, the next 145 rows give the spectral radiance of the 145 Tregenza patches.
+   * The Lighting Toolbox function [specsky](https://frudawski.de/specsky) can be used to create spectral daylight radiance data for testing purposes.
 * Add lumnaires (in luminaire menu):
    * Artificial lighting is optional.
    * First add luminaires by using the "add luminaire" tool in the toolbar.
@@ -87,10 +89,10 @@ LUMOS workflow is from left to right in the tab menu.
 
 ## How to cite:
 ### LUMOS:
-Rudawski, Frederic, *The spectral radiosity simulation program LUMOS for lighting research applications*, version 1.0, 2022, URL: www.frudawski.de/LUMOS
+Rudawski, Frederic, *The spectral radiosity simulation program LUMOS for lighting research applications*, version 1.02, 2022, URL: https://github.com/Frudawski/LUMOS. DOI: 10.5281/zenodo.7275808
 
 ### Lighting Toolbox:
-Rudawski, Frederic, *Lighting Toolbox for Matlab and Octave*, 2022, version 1.01, URL: www.frudawski.de/LightingToolbox
+Rudawski, Frederic, *Lighting Toolbox for Matlab and Octave*, 2022, URL: https://github.com/Frudawski/LightingToolbox. DOI: 10.5281/zenodo.7457041
 
 ### LUMOS accuracy:
 Rudawski, Frederic; Knoop, Martine, *Validation of the spectral radiosity calculation tool LUMOS in regards to the CIE TR 171 test scenarios for lighting simulation software*,  In: Tagungsband Lux junior 2021, pp. 225-248, Digitale Bibliothek Thüringen, 2021. DOI: 10.22032/dbt.49331
