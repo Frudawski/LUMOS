@@ -22,7 +22,7 @@ function varargout = spec_simulation(varargin)
 
 % Edit the above text to modify the response to help spec_simulation
 
-% Last Modified by GUIDE v2.5 19-Feb-2021 10:19:11
+% Last Modified by GUIDE v2.5 15-Mar-2023 09:39:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -80,6 +80,7 @@ handles.data.walls.window = [];
 % activate draw room tool at startup
 guidata(hObject, handles)
 set(handles.uitoggletool10,'State','on');
+set(handles.uipushtool25,'Enable','off');
 handles = guidata(hObject);
 handles.selected_tool = 11;
 
@@ -5500,7 +5501,7 @@ catch
 end
 
 for m = 1:size(data,2)
-    list{m,1} = data{m}.name{1}; % cellfield; ?
+    list{m,1} = data{m}.name{1};
     
     list{m,3} = data{m}.range{:};
     %rho = ciespec2Y(mat.data(1,:),mat.data(2,:),1)/100;
@@ -5518,9 +5519,6 @@ for m = 1:size(data,2)
         end
     end
 end
-
-
-
 
 
 % set table configuration
@@ -7710,7 +7708,7 @@ list = [];
 ind = 1;
 selected = get(handles.listbox,'Value');
 results = getappdata(handles.Lumos,'result');
-
+set(handles.uipushtool25,'Enable','off');
 
 for R = 1:numel(results)
     if ~isempty(results{R})
@@ -7992,7 +7990,7 @@ for R = 1:numel(results)
                     switch mode
 
                         case 'observer'
-                           
+                            
                             % observer radiance
                             list{ind,1} = ['         ',results{R}.measures{S}{m}.name];
                             list{ind,2} = R;
@@ -8191,8 +8189,9 @@ sky_nr = data{3};
 surface = data{4};
 handles.data.room = room_nr;
 handles.data.sky = sky_nr;
+handles.data.surface = surface;
 guidata(hObject,handles)
-camang = 130;
+camang = 180;
 
 switch plot_mode{selected}
     case 'room'
@@ -8705,7 +8704,7 @@ switch plot_mode{selected}
         set(handles.topview_point_table,'Data',data);
 
     case 'observer'
-        
+        set(handles.uipushtool25,'Enable','on');
         axes(handles.view)
         cla
         reset(handles.view)
@@ -8732,7 +8731,7 @@ switch plot_mode{selected}
         set(handles.topview_point_table,'Data',data);
         
     case 'point_view'
-        
+        set(handles.uipushtool25,'Enable','on');
         axes(handles.topview)
         cla
         reset(handles.topview)
@@ -8868,7 +8867,7 @@ switch plot_mode{selected}
         
         
     case 'point_view_L'
-        
+        set(handles.uipushtool25,'Enable','on');
         data = results{room_nr}.measures{sky_nr}{surface}.coordinates;
         data = [data results{room_nr}.measures{sky_nr}{surface}.azimuth];
         data = [data results{room_nr}.measures{sky_nr}{surface}.elevation];
@@ -8905,7 +8904,7 @@ switch plot_mode{selected}
         colormap('gray')
         
     case 'point_view_sc'
-        
+        set(handles.uipushtool25,'Enable','on');
         data = results{room_nr}.measures{sky_nr}{surface}.coordinates;
         data = [data results{room_nr}.measures{sky_nr}{surface}.azimuth];
         data = [data results{room_nr}.measures{sky_nr}{surface}.elevation];
@@ -8950,7 +8949,7 @@ switch plot_mode{selected}
         caxis([1e-3 lim])
         
     case 'point_view_mc'
-        
+        set(handles.uipushtool25,'Enable','on');
         data = results{room_nr}.measures{sky_nr}{surface}.coordinates;
         data = [data results{room_nr}.measures{sky_nr}{surface}.azimuth];
         data = [data results{room_nr}.measures{sky_nr}{surface}.elevation];
@@ -8995,7 +8994,8 @@ switch plot_mode{selected}
         caxis([1e-3 lim])
         
     case 'point_view_lc'
-                data = results{room_nr}.measures{sky_nr}{surface}.coordinates;
+        set(handles.uipushtool25,'Enable','on');
+        data = results{room_nr}.measures{sky_nr}{surface}.coordinates;
         data = [data results{room_nr}.measures{sky_nr}{surface}.azimuth];
         data = [data results{room_nr}.measures{sky_nr}{surface}.elevation];
         set(handles.topview_point_table,'Data',[]);
@@ -9039,7 +9039,7 @@ switch plot_mode{selected}
         caxis([1e-3 lim])
         
     case 'point_view_rh'
-        
+        set(handles.uipushtool25,'Enable','on');
         data = results{room_nr}.measures{sky_nr}{surface}.coordinates;
         data = [data results{room_nr}.measures{sky_nr}{surface}.azimuth];
         data = [data results{room_nr}.measures{sky_nr}{surface}.elevation];
@@ -9084,7 +9084,7 @@ switch plot_mode{selected}
         caxis([1e-3 lim])
         
     case 'point_view_mel'      
-                
+        set(handles.uipushtool25,'Enable','on');
         data = results{room_nr}.measures{sky_nr}{surface}.coordinates;
         data = [data results{room_nr}.measures{sky_nr}{surface}.azimuth];
         data = [data results{room_nr}.measures{sky_nr}{surface}.elevation];
@@ -9126,7 +9126,7 @@ switch plot_mode{selected}
         c.Label.String = unit;
         axis equal off
         colormap('parula')
-        caxis([1e-3 lim])
+        clim([1e-3 lim])
                 
     case 'observer_illuminance'
         
@@ -10865,6 +10865,8 @@ for n = buttons(~ismember(buttons,on))
         handles.selected_tool = n;
     end
 end
+% disabel hyperspec save button
+set(handles.uipushtool25,'Enable','off');
 guidata(hObject, handles)
 
 
@@ -11570,3 +11572,29 @@ plot_observer(hObject, eventdata, handles)
 handles = guidata(hObject);
 
 guidata(hObject,handles)
+
+
+% --------------------------------------------------------------------
+function uipushtool25_ClickedCallback(hObject, eventdata, handles)
+% hObject    handle to uipushtool25 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+room_nr = handles.data.room;
+sky_nr  = handles.data.sky;
+surface_nr = handles.data.surface;
+
+results = getappdata(handles.Lumos,'result');
+
+data = results{room_nr}.measures{sky_nr}{surface_nr};
+hyperspec.lambda = data.lambda;
+hyperspec.image = data.IM;
+
+% get filename and location
+[file,path] = uiputfile([data.name,'.mat'],'Save hyperspectral image matrix');
+% if aborted
+if file==0
+    guidata(hObject, handles)
+    return
+end
+save([path file],'hyperspec');
