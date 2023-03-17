@@ -1,6 +1,6 @@
 ![LUMOS](./LUMOS_Logo.png)
 
-#LUMOS
+# LUMOS
 
 LUMOS is a spectral radiosity lighting simulation tool written in Matlab. It allows for spectral and spatial evaluation in arbitrary points and directions.
 To use LUMOS, a Matlab license is required. The LUMOS software comes with a GUI and an editor, allowing to create room geometries, add objects and luminaires, apply material data, luminaire data and daylight data as well as review the simulation results and export any data or illustrations.
