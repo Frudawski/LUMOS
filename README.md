@@ -1,4 +1,4 @@
-# LUMOS
+![LUMOS](LUMOS_logo.png)
 
 LUMOS is a spectral radiosity lighting simulation tool written in Matlab. It allows for spectral and spatial evaluation in arbitrary points and directions.
 To use LUMOS, a Matlab license is required. The LUMOS software comes with a GUI and an editor, allowing to create room geometries, add objects and luminaires, apply material data, luminaire data and daylight data as well as review the simulation results and export any data or illustrations.
@@ -50,11 +50,11 @@ LUMOS workflow is from left to right in the tab menu.
    * You can copy objects, save them and load them with the corresponding tools in the toolbar.
    * Note: LUMOS uses the radiosity approach and computation time increases significantly with increasing geometry complexity.
 * Add materials to surfaces (in material menu):
-   * First add materials to the project by using the "add materials" tool in the toolbar. You can select multiple materials in one go. Materila data is provided in txt file format. First row give the wavelengths, the second row the spectral reflectance or transmittance for windows.
+   * First add materials to the project by using the "add materials" tool in the toolbar. You can select multiple materials in one go. Materil data is provided in txt file format. First row give the wavelengths, the second row the spectral reflectance or transmittance for windows.
    * After loading the materials, these will be listed in the table.
    * To apply a material to a surface, first select the surface in the list on the left side.
    * Apply any material by checking the selection box of that material in the table list.
-   * You can edit the integral reflactance of the material in the "rho" column for that surface.
+   * You can edit the integral reflectance of the material in the "rho" column for that surface.
    * You can apply one material to all room surfaces (not windows) by selecting the room in the list on the left side.
    * Each surface must have a material assigned, windows without material are treated as opening without material.
 * Add daylight data (in sky menu):
@@ -63,28 +63,28 @@ LUMOS workflow is from left to right in the tab menu.
    * Note: LUMOS calculates the entire scenes for each daylight data set, and so increasing computation time.
    * Daylight data is provided in txt file format for Tregenza hemisphere data with 145 patches row-wise. First row gives the wavelength, the next 145 rows give the spectral radiance of the 145 Tregenza patches.
    * The Lighting Toolbox function [specsky](https://frudawski.de/specsky) can be used to create spectral daylight radiance data for testing purposes.
-* Add lumnaires (in luminaire menu):
+* Add luminaires (in luminaire menu):
    * Artificial lighting is optional.
    * First add luminaires by using the "add luminaire" tool in the toolbar.
    * You can change the luminaire position by selecting it in the list on the left side and edit the table.
    * Load luminous distribution curves with the "import EULUMDAT" tool in the toolbar. LUMOS supports currently only EULUMDAT .ldt files. You can load multiple files in one go.
    * Load spectral luminaire data using the "import luminaire spectrum" tool in the toolbar. You can load multiple files in one go.
    * You can use the [Lighting Toolbox function ciespec](https://frudawski.de/ciespec/) to create standard illuminant spectra. The data is provided in txt file format, the first row gives the wavelengths the second row the spectral power distribution.
-   * Select a luminaire in the list on the left side and apply the data by selecting a luminous intesitiy distribution and a spectrum for the luminaire. You can display the data by selcting the model or spectrum cell in the table.
+   * Select a luminaire in the list on the left side and apply the data by selecting a luminous intensitiy distribution and a spectrum for the luminaire. You can display the data by selecting the model or spectrum cell in the table.
 * Add calculation metrics (in metrics menu):
-   * You can add observers (spectral fisheye image), single irradiance calulation points, Daylight Factor (DF) points and irradiance areas with multiple calculation points by using the corresponding tools in the toolbar.
+   * You can add observers (spectral fisheye image), single irradiance calculation points, Daylight Factor (DF) points and irradiance areas with multiple calculation points by using the corresponding tools in the toolbar.
    * Change metric positions by selecting it in the list on the left side and editing the table.
 * Simulation start and settings (in simulation menu):
    * Change the simulation settings in the table:
       * dens: sets the patch denisty per square meter (roughly)
-      * refl: sets the number of internal reflecxions
+      * refl: sets the number of internal reflexions
       * N°: changes the cardinal north direction
-      * h: sets the room heigt above ground (currently no effect)
+      * h: sets the room height above ground (currently no effect)
       * sim checkbox: enables or disables room in the simulation
    * Start the simulation with the "start simulation" tool in the toolbar.
-   * Wait until simulation is finished, this can take severalhours, depending on the scene complexity. Start with low complexitiy and low densitiy values to get a feeling for the calculation time.
+   * Wait until simulation is finished, this can take several hours, depending on the scene complexity. Start with low complexity and low density values to get a feeling for the calculation time.
 * View results (in results menu)
-   * Select any list item on the left side to view the corrsponding simulation data.
+   * Select any list item on the left side to view the corresponding simulation data.
    * You can save any table or image data with the tools in the toolbar.
 
 ## How to cite:
