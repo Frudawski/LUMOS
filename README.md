@@ -91,6 +91,8 @@ LUMOS workflow is from left to right in the tab menu.
 
 ## How to cite:
 ### LUMOS:
+Rudawski, Frederic, *The spectral radiosity simulation program LUMOS for lighting research applications*, In: Tagungsband LICHT 2023 – 25. Europäischer Lichttechnischer Kongress, pp. 110-115, 2023.
+
 Rudawski, Frederic, *The spectral radiosity simulation program LUMOS*, version 1.04, 2022, URL: https://github.com/Frudawski/LUMOS. DOI: 10.5281/zenodo.7275808
 
 ### Lighting Toolbox:
