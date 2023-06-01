@@ -5553,7 +5553,7 @@ try % single file
     mat{nr}.name = {file(1:end-4)};
     mat{nr}.data = material;
     mat{nr}.range = {[num2str(material(1,1)),'-',num2str(material(1,end))]};
-    mat{nr}.rho = cierho(material(1,:),material(2,:));
+    mat{nr}.rho = rho(material(1,:),material(2,:));
     rhoD65 = ciespec2Y(material(1,:),material(2,:).*ciespec(material(1,:),'D65'))/ciespec2Y(material(1,:),ciespec(material(1,:),'D65'));
     srgb = spec2srgb(mat{nr}.data(1,:),mat{nr}.data(2,:).*ciespec(mat{nr}.data(1,:),'D65'),'obj','D65');
     srgb = (srgb./max(srgb).*rhoD65).^(1/2.2); % gamma factor = sqrt(1/2.2)
@@ -5575,7 +5575,7 @@ catch % multiple files
         mat{nr}.data = load(filename);
         mat{nr}.range = {[num2str(mat{nr}.data(1,1)),'-',num2str(mat{nr}.data(1,end))]};
         material = mat{nr}.data;
-        mat{nr}.rho = cierho(material(1,:),material(2,:));
+        mat{nr}.rho = rho(material(1,:),material(2,:));
         rhoD65 = ciespec2Y(material(1,:),material(2,:).*ciespec(material(1,:),'D65'))/ciespec2Y(material(1,:),ciespec(material(1,:),'D65'));
         srgb = spec2srgb(mat{nr}.data(1,:),mat{nr}.data(2,:).*ciespec(mat{nr}.data(1,:),'D65'),'obj','D65');
         srgb = (srgb./max(srgb).*rhoD65).^(1/2.2); % gamma factor = sqrt(1/2.2)
