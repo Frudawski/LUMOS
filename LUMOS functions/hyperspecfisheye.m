@@ -336,8 +336,8 @@ for s = 1:numel(surfaces)
         else
             gin = ~gin & in & eld(:)>=0;
         end
-        gidx = ismember(ground.lambda,surfaces{s}.material.data(1,:));
-        widx = ismember(surfaces{s}.material.data(1,:),ground.lambda);
+        gidx = ismember(ground.lambda,lambda);
+        widx = ismember(surfaces{s}.material.data(1,:),lambda);
         im(gin,:) = repmat(ground.radiance(gidx).*surfaces{s}.material.data(2,widx),sum(gin),1);
 
     end
