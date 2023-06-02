@@ -912,7 +912,7 @@ switch type
                     % hack around polarplot deleting axes handle
                     h = figure('Visible','off');
                     h.Position = handles.topview.Position;
-                    plot2dldt(ldc);
+                    plot2dldc(ldc);
                     set(h,'Position', [10 10 520 520]);
                     set(h,'PaperUnits','inches','PaperPosition',[0 0 10 10],'Papersize',[10 10])
                     im = getframe(h);
@@ -2912,7 +2912,7 @@ if strcmp(obj.type,'luminaire')
         [~,ind] = max(abs(G));
         x = G(ind(1),1);
         y = G(ind(2),2);
-        h = plot3dldt(obj.ldt,'mode','norm','origin',C+co,'rotation',T);  
+        h = plot3dldc(obj.ldt,'mode','norm','origin',C+co,'rotation',T);  
         set(h,'EdgeAlpha',0.15)
     end
 end
@@ -2977,7 +2977,7 @@ if strcmp(obj.type,'luminaire')
         [~,ind] = max(abs(G));
         x = G(ind(1),1);
         y = G(ind(2),2);
-        h = plot3dldt(obj.ldt,'mode','norm','origin',C+co,'rotation',T);  
+        h = plot3dldc(obj.ldt,'mode','norm','origin',C+co,'rotation',T);  
         set(h,'EdgeAlpha',0.25)
     end
 end
@@ -4429,9 +4429,9 @@ switch type
                         ldt = getappdata(handles.Lumos,'ldt');
                         room{room_nr}.luminaire{lum_nr}.ldt = ldt{selected(1)};
                         h_old = room{room_nr}.luminaire{lum_nr}.geometry{1}(1,4);
-                        h = ldt{selected(1)}.info.fH/1000;
-                        b = ldt{selected(1)}.info.fB/1000;
-                        t = ldt{selected(1)}.info.fL/1000;
+                        h = ldt{selected(1)}.header.height/1000;
+                        b = ldt{selected(1)}.header.width/1000;
+                        t = ldt{selected(1)}.header.length/1000;
                         if b == 0
                             b = t;
                         end
@@ -4448,7 +4448,7 @@ switch type
                             0.1000    0.1000         0    0.1000
                             0         0.1000         0    0.1000];
                     end
-                catch
+                catch me
                     room{room_nr}.luminaire{lum_nr}.ldt = [];
                 end
                 setappdata(handles.Lumos,'room',room)
@@ -11226,13 +11226,16 @@ try % single file
 catch % multiple files
     ldt = getappdata(handles.Lumos,'ldt');
     nr = size(ldt,2)+1;
+    if ~iscell(file)
+        file = {file};
+    end
     for i = 1:size(file,2)
         try
             filename = [path file{i}];
         catch
             filename = [path file];
         end
-        ldt{nr} = read_ldt(filename);
+        ldt{nr} = readldt(filename);
 
         nr = nr + 1;
     end
