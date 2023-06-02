@@ -11214,7 +11214,7 @@ try % single file
     end
     
     filename = [path file];
-    ldc = read_ldt(filename);
+    ldc = readldt(filename);
 
     
     ldt = getappdata(handles.Lumos,'ldt');
