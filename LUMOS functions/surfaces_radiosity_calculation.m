@@ -649,14 +649,16 @@ try
             snormal = repmat(normal,size(csx,1),size(csx,2));
             
             % luminaire max dimension
+            lumrotM = rotMatrix(luminaires{lum}.rotation);
             dim = max(diff(luminaires{lum}.geometry{1}));
+            lumdim = dim(1:3)*lumrotM;
             mdim = max(dim(1:3));
             
             % check distance - dimension ratio criterion
             disdimratio = R./mdim;
             tol = 5;
-            N = max(ceil(tol./(R./dim(1))));
-            M = max(ceil(tol./(R./dim(2))));
+            N = max(ceil(tol./(R./lumdim(1))));
+            M = max(ceil(tol./(R./lumdim(2))));
             if isequal(mod(N,2),0)
                 N = N+1;
             end
@@ -669,11 +671,11 @@ try
             % luminaires - same LDC but more point sources
             if sum(disdimratio<tol)>0
                 %lumrep = 1;
-                [xgrid,ygrid] = DINgrid(dim(1),dim(2),0,'12464',[N M]);
+                [xgrid,ygrid] = DINgrid(lumdim(1),lumdim(2),0,'12464',[N M]);
                 lumrep = cell(1,N*M);
                 lumrepcoord =  [xgrid(:) ygrid(:) zeros(size(xgrid(:)))];
-                lumrepcoord(:,1) = lumrepcoord(:,1)-dim(1)/2;
-                lumrepcoord(:,2) = lumrepcoord(:,2)-dim(2)/2;
+                lumrepcoord(:,1) = lumrepcoord(:,1)-lumdim(1)/2;
+                lumrepcoord(:,2) = lumrepcoord(:,2)-lumdim(2)/2;
                 lumreprotM = rotMatrix(luminaires{lum}.rotation);
                 lumrepcoord = lumrepcoord*lumreprotM;
                 for numb = 1:N*M

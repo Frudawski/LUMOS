@@ -35,6 +35,31 @@ else
     borderzone = 0;
 end
 
+d = d-2*borderzone;
+b = b-2*borderzone;
+
+[v,idx] = sort([d b]);
+
+if isequal(idx(2),2)
+    x = b;
+    if v(2)/v(1)>=2
+        x = d;
+    end
+else
+    x = d;
+    if v(2)/v(1)>=2
+        x = b;
+    end
+end
+
+if isequal(x,0)
+    xq = NaN;
+    yq = NaN;
+    dn = 0;
+    bn = 0;
+    return
+end
+
 p = 0.2*5^(log10(d));
 p = real(p);
 
@@ -73,6 +98,7 @@ else
     bw = b/bn;
 end
 
+%{
 if exist('sizexy','Var')
     if borderzone
         bn = sizexy(1);
@@ -96,4 +122,16 @@ else
     rgrid = linspace(dw/2,d-dw/2,dn);
     zgrid = linspace(bw/2,b-bw/2,bn);
 end
+%}
+
+if exist('sizexy','var')
+        bn = sizexy(2);
+        bw = b/bn;
+        dn = sizexy(1);
+        dw = d/dn;
+end
+
+rgrid = linspace(dw/2,d-dw/2,dn)+borderzone;
+zgrid = linspace(bw/2,b-bw/2,bn)+borderzone;
+
 [xq,yq] = meshgrid(rgrid,zgrid);
