@@ -650,34 +650,39 @@ try
             
             % luminaire max dimension
             lumrotM = rotMatrix(luminaires{lum}.rotation);
-            dim = max(diff(luminaires{lum}.geometry{1}));
-            lumdim = dim(1:3)*lumrotM;
+            dim = max(diff(luminaires{lum}.geometry{1}(:,1:3))*lumrotM);
             mdim = max(dim(1:3));
             
             % check distance - dimension ratio criterion
             disdimratio = R./mdim;
             tol = 5;
-            N = max(ceil(tol./(R./lumdim(1))));
-            M = max(ceil(tol./(R./lumdim(2))));
+            N = max(ceil(tol./(R./dim(1))));
+            M = max(ceil(tol./(R./dim(2))));
             if isequal(mod(N,2),0)
                 N = N+1;
             end
             if isequal(mod(M,2),0)
                 M = M+1;
             end
-            %N = 1;
-            %M = 1;
+            % max 25 sub luminai
+            if M>25
+                M = 25;
+            end
+            if N>25
+                N = 25;
+            end
+
             % if disdimratio criterion is violated - use replacement
             % luminaires - same LDC but more point sources
             if sum(disdimratio<tol)>0
                 %lumrep = 1;
-                [xgrid,ygrid] = DINgrid(lumdim(1),lumdim(2),0,'12464',[N M]);
+                [xgrid,ygrid] = DINgrid(dim(1),dim(2),0,'12464',[N M]);
                 lumrep = cell(1,N*M);
                 lumrepcoord =  [xgrid(:) ygrid(:) zeros(size(xgrid(:)))];
-                lumrepcoord(:,1) = lumrepcoord(:,1)-lumdim(1)/2;
-                lumrepcoord(:,2) = lumrepcoord(:,2)-lumdim(2)/2;
+                lumrepcoord(:,1) = lumrepcoord(:,1)-dim(1)/2;
+                lumrepcoord(:,2) = lumrepcoord(:,2)-dim(2)/2;
                 lumreprotM = rotMatrix(luminaires{lum}.rotation);
-                lumrepcoord = lumrepcoord*lumreprotM;
+                lumrepcoord = (lumreprotM*lumrepcoord')';
                 for numb = 1:N*M
                     lumrep{numb} = luminaires{lum};
                     lumrep{numb}.geometry{1} = [0 0 0 0 0 0;0 0 0 0 0 0];
