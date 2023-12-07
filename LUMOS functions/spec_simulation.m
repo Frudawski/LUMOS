@@ -1213,6 +1213,8 @@ switch c
         room{r}.result = [];
     case 5
         room{r}.enable = data{r,c};
+    case 6 
+        room{r}.MeshOptimization = data{r,c}; 
     otherwise
 end
 
@@ -4436,7 +4438,7 @@ switch type
                             b = t;
                         end
                         hdiff = h-h_old;
-                        room{room_nr}.luminaire{lum_nr}.coordinates(3) = room{room_nr}.luminaire{lum_nr}.coordinates(3)-hdiff;
+                        room{room_nr}.luminaire{lum_nr}.coordinates(3) = room{room_nr}.luminaire{lum_nr}.coordinates(3);
                         room{room_nr}.luminaire{lum_nr}.geometry{1} = [0 0 0 h
                             b 0 0 h
                             b t 0 h
@@ -4815,6 +4817,7 @@ elseif strcmp(handles.tab_group.SelectedObject.String,'sky') == 1
     if isempty(list)
         set(m1,'enable','off')
     end
+
     % material context menu
 elseif strcmp(handles.tab_group.SelectedObject.String,'material') == 1
     %comeback('material context menu')
@@ -4886,6 +4889,7 @@ elseif strcmp(handles.tab_group.SelectedObject.String,'metrics') == 1
     if isempty(list)
         set(m1,'enable','off')
     end
+    
     % luminaire contextmenu
 elseif strcmp(handles.tab_group.SelectedObject.String,'luminaire') == 1
     % listbox contextmenu
@@ -5905,8 +5909,10 @@ for r = 1:numel(room)
             % check that materials are assigned
             mat_check = 1;
             for c = 1:numel(surfaces)
-                if (isempty(surfaces{c}.material) || strcmp(surfaces{c}.material.name,'none')) && ~strcmp(surfaces{c}.type,'window')
-                    mat_check = 0;
+                if (isempty(surfaces{c}.material) || strcmp(surfaces{c}.material.name,'none')) && (~strcmp(surfaces{c}.type,'window'))
+                    if ~strcmp(surfaces{c}.type,'luminaire')
+                        mat_check = 0;
+                    end
                 end
             end
             if isempty(room{r}.environment_ground)
@@ -5970,7 +5976,13 @@ for r = 1:numel(room)
             end
             % actual radiosity simulation
             if (s~= 0 || ~isempty(luminaires))
-                [calculation,ground,measurements] = surfaces_radiosity_calculation(surfaces,skydata,luminaires,ground,information,measurements);
+                
+                try
+                    MeshOptimization = room{r}.MeshOptimization;
+                catch
+                    MeshOptimization = 1;
+                end
+                [calculation,ground,measurements] = surfaces_radiosity_calculation(surfaces,skydata,luminaires,ground,information,measurements,MeshOptimization);
                 
                 % save calculation
                 result{r}.sky{s+1} = calculation;
@@ -5992,12 +6004,14 @@ end
 setappdata(handles.Lumos,'result',result)
 setappdata(handles.Lumos,'room',room)
 t = toc;
-if t>360
-    t = round(t/3600,2);
-    postfix = ' h';
-elseif t>60
-    t = round(t/60,1);
-    postfix = ' m';
+if t>60
+    if t>360
+        t = round(t/3600,2);
+        postfix = ' h';
+    else
+        t = round(t/60,1);
+        postfix = ' m';
+    end
 else
     t = round(t);
     postfix = ' s';
@@ -6026,7 +6040,7 @@ try
     end
 catch ERROR
     % error message output
-    comeback(['Error:',10])
+    bookmark(['Error:',10])
     catcher(ERROR)
     
     cla
@@ -6251,8 +6265,6 @@ for n = 1:numel(O)
         end
     end
 end
-% check if object intersect with other objects
-
 surfaces = [surfaces S];
 
 
@@ -6335,23 +6347,39 @@ g(:,2) = g(:,2)-offset(:,2);
 M = deg2rad(obj.rotation);
 T =  makehgtform('xrotate',M(1),'yrotate',M(2),'zrotate',M(3));
 T = T(1:3,1:3);
-g1 = g(:,1:3)*T(1:3,1:3);
-g2 = g(:,[1 2 4])*T(1:3,1:3);
+%T = rotate_object(obj,obj.coordinates-origin);
+g1 = g(:,1:3);%*T(1:3,1:3);
+g2 = g(:,[1 2 4]);%*T(1:3,1:3);
 
 % shift coordinates according to origin matrix
 S = repmat(co,size(g,1),1);
-g1 = g1+S;
-g2 = g2+S;
+%g1 = g1+S;
+%g2 = g2+S;
 
-g1 = (g1*rot)+origin;
-g2 = (g2*rot)+origin;
+%g1 = (g1*rot)+origin;
+%g2 = (g2*rot)+origin;
 
 obj.geometry{1} = [g1 g2];
 obj.coordinates = obj.coordinates+c;
 obj.material = material;
 surfaces = get_object_surfaces(g1,g2,obj);
+for n = 1:length(surfaces)
+    surfaces{n}.type = 'luminaire';
+    surfaces{n}.vertices = surfaces{n}.vertices*T+obj.coordinates;
+    surfaces{n}.normal = surfaces{n}.normal*T;
+end
 
-
+%{
+% correct normal vectors
+Tnorm = rotate_object(obj);
+g1 = g(:,1:3);
+g2 = g(:,[1 2 4]);
+norm_surfaces = get_object_surfaces(g1,g2,obj);
+for n = 1:length(surfaces)
+    surfaces{n}.type = 'luminaire';
+    surfaces{n}.normal = norm_surfaces{n}.normal*Tnorm;
+end
+%}
 
 function [surfaces,objects] = get_objects_surfaces(objs,M,co,d,origin,s,material,O)
 if ~exist('co','var')
@@ -6445,7 +6473,9 @@ obj.material = material;
 surfaces = get_object_surfaces(g1,g2,obj);
 
 
+
 function object =  get_object_surfaces(data1,data2,obj)
+
 try
     for w = 1:size(data1,1)-1
         
@@ -6485,19 +6515,30 @@ catch
     object = [];
 end
     
+
     
 function S = seperate_segments(data,obj)
 x = data(:,1);
 y = data(:,2);
+z = data(:,3);
+ind = 2;
+if isscalar(unique(y))
+    y = data(:,3);
+    ind = 3;
+end
 % segment triangulation
-ctri = delaunay(x,y);
+try
+    ctri = delaunay(x,y);
+catch
+    ctri = delaunay(x,z);
+    s_ind = 3;
+end
 % ensure clockwise triangles
 for t = 1:size(ctri,1)
     T = data(ctri(t,:),:);
-    idx = c_quickhull(T(:,1:2));
+    idx = c_quickhull(T(:,[1 ind]));
     ctri(t,:) = ctri(t,idx(1:end-1));
 end
-
 
 ind = 1;
 % combine neighbouring segments with same normal direction
@@ -6509,7 +6550,13 @@ for seg = vec
     if ismember(seg,not)
         continue
     end
-    if ~inpolygon(mean(data(ctri(seg,:),1)),mean(data(ctri(seg,:),2)),data(:,1),data(:,2))
+    if isscalar(unique(data(ctri(seg,:),2)))
+        s_ind = 3;
+    else
+        s_ind = 2;
+    end
+    [in,on] = inpolygon(mean(data(ctri(seg,:),1)),mean(data(ctri(seg,:),s_ind)),data(:,1),data(:,s_ind));
+    if ~in && ~on
         continue
     end
     
@@ -6523,7 +6570,7 @@ for seg = vec
         if ismember(oseg,not)
             continue
         end
-        if inpolygon(mean(data(ctri(oseg,:),1)),mean(data(ctri(oseg,:),2)),data(:,1),data(:,2))
+        if inpolygon(mean(data(ctri(oseg,:),1)),mean(data(ctri(oseg,:),s_ind)),data(:,1),data(:,s_ind))
             % segment normals
             w.vertices = segment{n};
             ow.vertices = data(ctri(oseg,:),:);
@@ -6652,7 +6699,7 @@ guidata(hObject, handles)
 simulation_table(hObject, eventdata, handles)
 handles = guidata(hObject);
 
-
+% update list
 simulation_listbox(hObject, eventdata, handles)
 handles = guidata(hObject);
 
@@ -6775,12 +6822,20 @@ for r = 1:size(room,2)
     catch
         list{5,r} = 0;
     end
+    try
+        list{6,r} = room{r}.MeshOptimization;
+        if isempty(list{6,r})
+            list{6,r} = 1;
+        end
+    catch
+        list{6,r} = 1;
+    end
     check = 0;
 
 end
     
 rows = [];
-rows = {'dens','refl','N°','h','sim'};
+rows = {'dens','refl','N°','h','sim','opt'};
 
 
 columns = [];
@@ -6804,8 +6859,13 @@ catch
    %list{5} = false; 
    %set(handles.topview_point_table,'Data',list')
 end
+try
+    list{6,:} = logical(list{6,:});
+    set(handles.topview_point_table,'Data',list')
+    set(handles.topview_point_table,'ColumnEditable',editable)
+end
 
-clnformat = {'numeric','numeric','numeric','numeric','logical'};
+clnformat = {'numeric','numeric','numeric','numeric','logical','logical'};
 set(handles.topview_point_table,'ColumnFormat',clnformat)
     
 guidata(hObject, handles)
@@ -7150,7 +7210,7 @@ switch type
             for L = 1:numel(ldt)
                 data{L,1} = ldt{L}.name;
                 try
-                if strcmp(room{room_nr}.luminaire{lum_nr}.ldt.name,ldt{L}.name)
+                if isequal(room{room_nr}.luminaire{lum_nr}.ldt,ldt{L})%strcmp(room{room_nr}.luminaire{lum_nr}.ldt.name,ldt{L}.name)
                     data{L,2} = true;
                 else
                     data{L,2} = false;
@@ -7273,6 +7333,18 @@ plot_luminaire(handles,eventdata,hObject)
 handles = guidata(hObject);
 guidata(hObject,handles)
 
+
+function rename_luminaire(hObject,eventdata,handles, nr)
+room = getappdata(handles.Lumos,'room');
+% get room nr
+[room_nr, lum_nr, ~] = lum_room_nr(handles, nr);
+room{room_nr}.luminaire{lum_nr} = rename_object(room{room_nr}.luminaire{lum_nr});
+setappdata(handles.Lumos,'room',room);
+guidata(hObject,handles)
+%luminaire_table(hObject,eventdata,handles)
+%luminaire_listbox(hObject,eventdata,handles)
+guidata(hObject,handles)
+luminaire_tab_Callback(hObject, eventdata, handles)
 
 function object = rename_object(object)
 % user inut: new name
@@ -9130,7 +9202,7 @@ switch plot_mode{selected}
                 
     case 'observer_illuminance'
         
-        comeback('observer luminance')
+        bookmark('observer luminance')
         
         data = results{room_nr}.measures{sky_nr}{surface};%room{room_nr}.measures{observer_nr}.spatial{sky_nr}.L;
         lambda = results{room_nr}.measures{sky_nr}{surface}.lambda;
@@ -9947,7 +10019,7 @@ elseif ~isempty(observer_nr)
         
     elseif isequal(parameter,7)
         % testing viewing field plot -> doesn't seem to work
-        comeback('testing view plot')
+        bookmark('testing view plot')
         plot_room_part_result(handles,room{room_nr},sky_nr,part_nr,observer_nr,parameter,handles.view)
         axes(handles.view)
         plot_gouraud(room{room_nr},handles.data.sky,handles.view,handles.topview,room_nr)
@@ -11057,8 +11129,11 @@ if isempty(handles.data.object)
 else
     obj = room{handles.data.room}.objects{handles.data.object};
 end
+% reset coordinates
+obj.coordinates = [1 1 0];
 % get filename (ui window)
 file = savefile('object','obt');
+% save object
 save(file,'obj')
 
 
@@ -11077,6 +11152,8 @@ try
 catch
     errordlg('Could not load object.','error open file','replace')
 end
+% reset coordinates
+obj.coordinates = [1 1 0];
 % add loaded object to room
 idx = numel(room{handles.data.room}.objects);
 room{handles.data.room}.objects{idx+1} = obj;

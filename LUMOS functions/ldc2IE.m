@@ -23,7 +23,8 @@ normal = observer.normal;
 snormal = repmat(normal,size(observer.coordinates(1),1),size(observer.coordinates(1),2));
 
 % luminaire max dimension
-dim = max(diff(luminaires.geometry{1}));
+%dim = max(diff(luminaires.geometry{1}));
+dim = [luminaires.ldt.header.luminous_width luminaires.ldt.header.luminous_length 0]./1000;
 mdim = max(dim(1:3));
 
 % check distance - dimension ratio criterion
@@ -52,7 +53,11 @@ if sum(disdimratio<tol)>0
     for numb = 1:N*M
         lumrep{numb} = luminaires;
         lumrep{numb}.geometry{1} = [0 0 0 0 0 0;0 0 0 0 0 0];
+        try
         lumrep{numb}.coordinates = lumrep{numb}.coordinates + lumrepcoord(numb,:);
+        catch
+             bookmark('Error in luminaire rotation?')
+        end
         lumrep{numb}.dimming = luminaires.dimming/(N*M);
     end
 else

@@ -4,8 +4,11 @@
 % Date: 08.11.2017 - last updated: 05.10.2021
 
 
-function mesh = Meshing(input_surface,density,plot_mode,luminaires,measurements)
+function mesh = Meshing(input_surface,density,plot_mode,luminaires,measurements,MeshOptimization)
 
+if ~exist('MeshOptimization','var')
+    MeshOptimization = 1;
+end
 
 surface = input_surface;
 % initialize
@@ -54,7 +57,7 @@ if ~isnan(elevation) && ~isequal(elevation,0)
     else
         rotax = cross(normal,[0 0 1]);
         R = rotMatrixD(rotax,rad2deg(elevation));
-        
+
         %{
         figure(2)
         hold off
@@ -74,13 +77,13 @@ if ~isnan(elevation) && ~isequal(elevation,0)
           dummy = 1;
         %}
     end
-    
+
     % rotate
     a = R*[surfx surfy surfz]';
     px = a(1,:);
     py = a(2,:);
     pz = a(3,:);
-    
+
 else
     R = eye(3);
     px = surfx;
@@ -125,7 +128,7 @@ if ~isequal(mod(azimuth,pi),0)
     px = a(1,:);
     py = a(2,:);
     pz = a(3,:);
-else 
+else
     P = eye(3);
 end
 
@@ -200,7 +203,7 @@ bordery = [];
 nborderz = [];
 nbordery = [];
 for i = 1:numel(pz)-1
-    m = round(3*density*norm([r(i+1)-r(i);pz(i+1)-pz(i)]))-2;    
+    m = round(3*density*norm([r(i+1)-r(i);pz(i+1)-pz(i)]))-2;
     if m<2
         m = 2;
     end
@@ -246,62 +249,98 @@ end
 [y2,z2] = meshgrid(xgrid2,zgrid2);
 
 
+% luminaire subgrid
 lumrayx = [];
 lumrayz = [];
+if MeshOptimization
 
-% luminare equidist ray2plane grid points
+    lumrep = {};
+    lim = 1/3;
 
-% check surface type
-if ~strcmp(surface.type,'luminaire')
+    for lum = 1:length(luminaires)
+        lumgrid = [luminaires{lum}.ldt.header.luminous_width luminaires{lum}.ldt.header.luminous_length 0]./1000;
+        N = round(lumgrid(1)./lim);
+        M = round(lumgrid(2)./lim);
 
-    % delta angle stepwidth in degree
-    %da = 30;
-    % point on surface plane
-    %Q = [px(1) py(1) pz(1)];
-    % surface normal (y-z plane)
-    n = [1 0 0];
-    for L = 1:size(luminaires,2)
-        % luminare emittance vectors
-        [alpha,theta] = meshgrid(15:27.5:345,15:27.5:345);
-        theta(:,2:4:end) = theta(:,2:4:end)+11.25;
-        theta(:,4:4:end) = theta(:,4:4:end)+11.25;
+        if isequal(mod(N,2),0)
+            N = N+1;
+        end
+        if isequal(mod(M,2),0)
+            M = M+1;
+        end
 
-        alpha = deg2rad(alpha);
-        theta = deg2rad(theta);
-        [Lx,Ly,Lz] = sph2cart(alpha(:),theta(:),ones(size(alpha(:))));
-        Lxyz = (R*(P*[Lx Ly Lz]'))';
-        Lx = Lxyz(:,1);
-        Ly = Lxyz(:,2);
-        Lz = Lxyz(:,3);
-        % intersection calculation parameters
-        p = dot(luminaires{L}.coordinates,n);
-        vecr = dot([Lx Ly Lz],repmat(n,size(Lx,1),1),2);
-        para = -p./vecr;
-        S = (para.*[Lx,Ly,Lz]);
-        % intersection points
-        lumrayx = [lumrayx;S(:,2)+luminaires{L}.coordinates(2)];
-        lumrayz = [lumrayz;S(:,3)+luminaires{L}.coordinates(3)];
-        
-    %{
+        [xgrid,ygrid] = DINgrid(lumgrid(1),lumgrid(2),0,'12464',[N M]);
+        lumrepcoord =  [xgrid(:) ygrid(:) zeros(size(xgrid(:)))];
+        lumrepcoord(:,1) = lumrepcoord(:,1)-lumgrid(1)/2;
+        lumrepcoord(:,2) = lumrepcoord(:,2)-lumgrid(2)/2;
+        %lumreprotM = rotMatrix(luminaires{lum}.rotation);
+        a = luminaires{lum}.rotation;
+        M1 = rotMatrixD([1 0 0],a(1));
+        M2 = rotMatrixD([0 1 0],a(2));
+        M3 = rotMatrixD([0 0 1],a(3));
+        lumreprotM = M3*M2*M1;
+        lumrepcoord = (lumreprotM*lumrepcoord')';
+        for numb = 1:N*M
+            lumrep{end+1} = luminaires{lum};
+            %lumrep{end+1}.geometry{1} = [0 0 0 0 0 0;0 0 0 0 0 0];
+            lumrep{end}.coordinates = lumrep{end}.coordinates + lumrepcoord(numb,:);
+        end
+    end
+    luminaires = lumrep;
+
+    % luminare equidist ray2plane grid points
+
+    % check surface type
+    if ~strcmp(surface.type,'luminaire')
+
+        % delta angle stepwidth in degree
+        %da = 30;
+        % point on surface plane
+        %Q = [px(1) py(1) pz(1)];
+        % surface normal (y-z plane)
+        n = [1 0 0];
+        for L = 1:size(luminaires,2)
+            % luminare emittance vectors
+            [alpha,theta] = meshgrid(15:27.5:345,15:27.5:345);
+            theta(:,2:4:end) = theta(:,2:4:end)+11.25;
+            theta(:,4:4:end) = theta(:,4:4:end)+11.25;
+
+            alpha = deg2rad(alpha);
+            theta = deg2rad(theta);
+            [Lx,Ly,Lz] = sph2cart(alpha(:),theta(:),ones(size(alpha(:))));
+            Lxyz = (R*(P*[Lx Ly Lz]'))';
+            Lx = Lxyz(:,1);
+            Ly = Lxyz(:,2);
+            Lz = Lxyz(:,3);
+            % intersection calculation parameters
+            p = dot(luminaires{L}.coordinates,n);
+            vecr = dot([Lx Ly Lz],repmat(n,size(Lx,1),1),2);
+            para = -p./vecr;
+            S = (para.*[Lx,Ly,Lz]);
+            % intersection points
+            lumrayx = [lumrayx;S(:,2)+luminaires{L}.coordinates(2)];
+            lumrayz = [lumrayz;S(:,3)+luminaires{L}.coordinates(3)];
+
+            %{
     % debuging
     if dummy
         hold on
         plot3(luminaires{L}.coordinates(1),luminaires{L}.coordinates(2),luminaires{L}.coordinates(3),'r*')
         plot3(Lx+luminaires{L}.coordinates(1),Ly+luminaires{L}.coordinates(2),Lz+luminaires{L}.coordinates(3),'r.')
     end
-    %}
+            %}
+
+        end
+
+        ind = lumrayx>min(py) & lumrayx<max(py);
+        lumrayx = lumrayx(ind);
+        lumrayz = lumrayz(ind);
+        ind = lumrayz>min(pz) & lumrayz<max(pz);
+        lumrayx = lumrayx(ind);
+        lumrayz = lumrayz(ind);
 
     end
-
-    ind = lumrayx>min(py) & lumrayx<max(py);
-    lumrayx = lumrayx(ind);
-    lumrayz = lumrayz(ind);
-    ind = lumrayz>min(pz) & lumrayz<max(pz);
-    lumrayx = lumrayx(ind);
-    lumrayz = lumrayz(ind);
-
 end
-
 
 % observer ray2plane grid points
 orayx = [];
@@ -309,7 +348,7 @@ orayz = [];
 
 % TODO: change to user defined resolution
 % Tregenza table
-% almucantar number, number of patches, almucantar center angle, azimuth increament, solid angle? 
+% almucantar number, number of patches, almucantar center angle, azimuth increament, solid angle?
 TR = [1 30 6 12 12; 2 30 18 12 12; 3 24 30 15 12; 4 24 42 15 12; 5 18 54 20 12; 6 12 66 30 12; 7 6 78 60 12; 8 1 90 0 12];
 % patch numbers and angles
 % line 1: almucantars, line 2: azimuths, line 3: Patchnumber
@@ -402,8 +441,8 @@ if blank
         x = x(~inblank);
         z = z(~inblank);
         % density correction factor
-        correction = 3; 
-        
+        correction = 3;
+
         blankrgrid = [];
         blankzgrid = [];
         for v = 1:size(rotgap{b},1)-1
@@ -440,7 +479,7 @@ end
 %surfedges = sort([chw [chw(2:end);chw(1)]],2);
 
 for i = 1:numel(pz)-1
-    m = round(3*density*norm([r(i+1)-r(i);pz(i+1)-pz(i)]))-2;    
+    m = round(3*density*norm([r(i+1)-r(i);pz(i+1)-pz(i)]))-2;
     if m<2
         m = 2;
     end
@@ -449,7 +488,7 @@ for i = 1:numel(pz)-1
     chw = find(ismember(ltfround(DT.Points,12),ltfround([y' z'],12),'rows'));
     surfedges = [chw(1:end-1) chw(2:end)];
     if ~isempty(surfedges)
-       DT = force_edge(DT,surfedges);
+        DT = force_edge(DT,surfedges);
     end
 end
 
@@ -587,18 +626,18 @@ axis off
 
 % window
 for win = 1:size(windows,2)
-     %triplot(windows{win},'Color','b')
-     
-     dt = [];
-     dt.Points = windows{win}.Points;
-     dt.ConnectivityList = windows{win}.ConnectivityList;
-     
-     datax = [dt.Points(dt.ConnectivityList(:,1),1) dt.Points(dt.ConnectivityList(:,2),1) dt.Points(dt.ConnectivityList(:,3),1) dt.Points(dt.ConnectivityList(:,1),1)];
-     dataz = [dt.Points(dt.ConnectivityList(:,1),2) dt.Points(dt.ConnectivityList(:,2),2) dt.Points(dt.ConnectivityList(:,3),2) dt.Points(dt.ConnectivityList(:,1),2)];
-     %dataz = [dt.Points(dt.ConnectivityList(:,1),3) dt.Points(dt.ConnectivityList(:,2),3) dt.Points(dt.ConnectivityList(:,3),3) dt.Points(dt.ConnectivityList(:,1),3)];
-     for i = 1:size(datax,1)
-         fill(datax(i,:),dataz(i,:),[0 0.5 0.75],'Facecolor',[0 0.5267 0.6461])%,'Facealpha',0.5
-     end
+    %triplot(windows{win},'Color','b')
+
+    dt = [];
+    dt.Points = windows{win}.Points;
+    dt.ConnectivityList = windows{win}.ConnectivityList;
+
+    datax = [dt.Points(dt.ConnectivityList(:,1),1) dt.Points(dt.ConnectivityList(:,2),1) dt.Points(dt.ConnectivityList(:,3),1) dt.Points(dt.ConnectivityList(:,1),1)];
+    dataz = [dt.Points(dt.ConnectivityList(:,1),2) dt.Points(dt.ConnectivityList(:,2),2) dt.Points(dt.ConnectivityList(:,3),2) dt.Points(dt.ConnectivityList(:,1),2)];
+    %dataz = [dt.Points(dt.ConnectivityList(:,1),3) dt.Points(dt.ConnectivityList(:,2),3) dt.Points(dt.ConnectivityList(:,3),3) dt.Points(dt.ConnectivityList(:,1),3)];
+    for i = 1:size(datax,1)
+        fill(datax(i,:),dataz(i,:),[0 0.5 0.75],'Facecolor',[0 0.5267 0.6461])%,'Facealpha',0.5
+    end
 end
 axis equal
 
@@ -607,7 +646,7 @@ end
 
 
 function plot_mesh_3D(wall)
-% 3D coordinates 
+% 3D coordinates
 
 dt.Points = wall.mesh.points;
 dt.ConnectivityList = wall.mesh.list;
@@ -627,14 +666,14 @@ end
 % window(s)
 try
     for win = 1:size(wall.windows,2)
-        
+
         dt.Points = wall.windows{win}.mesh.points;
         dt.ConnectivityList = wall.windows{win}.mesh.list;
-        
+
         wdatax = [dt.Points(dt.ConnectivityList(:,1),1) dt.Points(dt.ConnectivityList(:,2),1) dt.Points(dt.ConnectivityList(:,3),1) dt.Points(dt.ConnectivityList(:,1),1)];
         wdatay = [dt.Points(dt.ConnectivityList(:,1),2) dt.Points(dt.ConnectivityList(:,2),2) dt.Points(dt.ConnectivityList(:,3),2) dt.Points(dt.ConnectivityList(:,1),2)];
         wdataz = [dt.Points(dt.ConnectivityList(:,1),3) dt.Points(dt.ConnectivityList(:,2),3) dt.Points(dt.ConnectivityList(:,3),3) dt.Points(dt.ConnectivityList(:,1),3)];
-        
+
         for i = 1:size(wdatax,1)
             fill3(wdatax(i,:),wdatay(i,:),wdataz(i,:),[0 0.5 0.75],'Facecolor',[0 0.5267 0.6461])
         end

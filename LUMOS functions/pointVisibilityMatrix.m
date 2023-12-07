@@ -34,6 +34,7 @@ if ~isequal(fisheye,0)
 else
     vis(ema<90 & ema>=0 & ina<90 & ina>=0) = 1;
 end
+
 % 2nd visibility matrix (blocked by other surface)
 VIS = ones(size(vis));
 % loop over surfaces

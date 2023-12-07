@@ -968,16 +968,25 @@ switch handles.mode
     case 'luminaire'
         luminaire_table(H,[],handles.Lumos)
         refresh_2D(handles.Lumos,[],H)
+        
         try
             refresh_2D_objects(handles.Lumos,[],H,H.data.object,'object')
         catch
+            try
+                refresh_2D_objects(handles.Lumos,[],H,H.data.object,'luminaire')
+            catch
+            end
         end
-        refresh_2D_objects(handles.Lumos,[],H,H.data.object,'luminaire')
+            
         try
             refresh_3DObjects(handles.Lumos, [], H, H.data.object, 'object')
         catch
+            try
+            refresh_3DObjects(handles.Lumos, [], H, H.data.object, 'luminaire')
+            catch
+            end
         end
-        refresh_3DObjects(handles.Lumos, [], H, H.data.object, 'luminaire')
+        
 end
 
 

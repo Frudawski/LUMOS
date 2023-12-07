@@ -64,6 +64,10 @@ for s = 1:numel(surfaces)
         %end
         
         % collect data for plot
+        if strcmp(surfaces{s}.type,'luminaire')
+            %wn = -wn;
+        end
+         
         FaceNormal = [FaceNormal;repmat(wn,size(surfaces{s}.mesh.list,1),1)];
         VertexNormal = [VertexNormal;repmat(wn,size(surfaces{s}.mesh.points,1),1)];
         Faces = [Faces;surfaces{s}.mesh.list+size(Vertices,1)];
@@ -100,6 +104,8 @@ for s = 1:numel(surfaces)
             % bright luminaire appearance
             if strcmp(surfaces{s}.type,'luminaire')
                 lumind = [lumind;(length(L)+1:length(L)+length(vertex_L))'];
+                vertex_L = 0;
+                vertex_xyz = CIExyz(surfaces{s}.material.data(1,:),surfaces{s}.material.data(2,:));
             end
             
             L = [L;vertex_L];
@@ -129,7 +135,7 @@ for s = 1:numel(surfaces)
     end
 end
 
-if ambient
+ if ambient
     
     % SKY
     
@@ -341,10 +347,12 @@ switch colour
         L = 116.*fa-16;
         % gamma correctiom
         L = real((L./max(L)).^(1/2));
-        % bright luminaire appearance
-        L(unique(lumind)) = max(L);
+        % luminaire frame
+
+        L(unique(lumind)) = rgb(lumind)./max(rgb(lumind));
         % white balancing
         wb = max(L)/max(mean(rgb(rgb~=0),'omitnan'));
+        %rgb(lumind,:) = 1;
         % ensure displayable color values
         col = (rgb.*L.*wb);
         col(col<0) = 0;
@@ -360,6 +368,8 @@ switch colour
             'BackFaceLighting','unlit',...
             'FacesMode','auto');
     case 'false-colours_E'
+        % luminaire appearance
+        L(unique(lumind)) = NaN;
         col = colormap(parula(size(L,1)));
         % plot patches
         p = patch('Vertices',Vertices,'Faces',Faces,...
@@ -377,6 +387,8 @@ switch colour
         end
         %cbar = copyobj(c);
     case 'false-colours_L'
+        % luminaire appearance
+        L(unique(lumind)) = NaN;
         col = colormap(parula(size(L,1)));
         % plot patches
         p = patch('Vertices',Vertices,'Faces',Faces,...

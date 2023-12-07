@@ -1,7 +1,7 @@
 % Radiosity computation
 %
 % Author: Frederic Rudawski
-% Date: 10-11-2017, last edited: 04.06.2020
+% Date: 10-11-2017, last edited: 02.12.2023
 %
 % A indoor radiosity calculation model for spectral data
 %
@@ -9,7 +9,11 @@
 % radiosity computation.
 
 
-function [calculation,ground,measurements] = surfaces_radiosity_calculation(surfaces,sky,luminaires,ground,information,measurements)
+function [calculation,ground,measurements] = surfaces_radiosity_calculation(surfaces,sky,luminaires,ground,information,measurements,MeshOptimization)
+
+if ~exist('MeshOptimization','var')
+    MeshOptimization = 1;
+end
 
 calculation = [];
 
@@ -86,7 +90,7 @@ try
         
 
         
-        surfaces{s} = Meshing(surfaces{s},density,plot_mode,luminaires,measurements);
+        surfaces{s} = Meshing(surfaces{s},density,plot_mode,luminaires,measurements,MeshOptimization);
         % surface lambda
         %figure(2)
         if strcmp(surfaces{s}.type,'window') && (isempty(surfaces{s}.material) || isempty(surfaces{s}.material.data))
@@ -561,7 +565,9 @@ try
             end
             % end wall loop
         end
-        
+    else
+        step = step + numel(surfaces);
+        waitbar(step/steps,wbh,['Artificial lighting: surface ',num2str(s),'/',num2str(numel(surfaces))]);
     end
     
     % test for result, if not available set to zero
@@ -649,8 +655,11 @@ try
             snormal = repmat(normal,size(csx,1),size(csx,2));
             
             % luminaire max dimension
-            lumrotM = rotMatrix(luminaires{lum}.rotation);
-            dim = max(diff(luminaires{lum}.geometry{1}(:,1:3))*lumrotM);
+            %lumrotM = rotMatrix(luminaires{lum}.rotation);
+
+            %dim = max(diff(luminaires{lum}.geometry{1}(:,1:3))*lumrotM);
+            dim = [luminaires{lum}.ldt.header.luminous_width luminaires{lum}.ldt.header.luminous_length 0]./1000;
+            % CHECK ALSO MESHING.M LINE: 250+
             mdim = max(dim(1:3));
             
             % check distance - dimension ratio criterion
@@ -664,12 +673,25 @@ try
             if isequal(mod(M,2),0)
                 M = M+1;
             end
-            % max 25 sub luminai
+            % max 25 sub luminaires
+            %{
             if M>25
                 M = 25;
             end
             if N>25
                 N = 25;
+            end
+            %}
+            if M>25 || N>25
+               val = max([M N]);
+               M = round(M/(val/25));
+               N = round(N/(val/25));
+            end
+            if isequal(mod(N,2),0)
+                N = N+1;
+            end
+            if isequal(mod(M,2),0)
+                M = M+1;
             end
 
             % if disdimratio criterion is violated - use replacement
@@ -681,7 +703,12 @@ try
                 lumrepcoord =  [xgrid(:) ygrid(:) zeros(size(xgrid(:)))];
                 lumrepcoord(:,1) = lumrepcoord(:,1)-dim(1)/2;
                 lumrepcoord(:,2) = lumrepcoord(:,2)-dim(2)/2;
-                lumreprotM = rotMatrix(luminaires{lum}.rotation);
+                %lumreprotM = rotMatrix(luminaires{lum}.rotation);
+                a = luminaires{lum}.rotation;
+                M1 = rotMatrixD([1 0 0],a(1));
+                M2 = rotMatrixD([0 1 0],a(2));
+                M3 = rotMatrixD([0 0 1],a(3));
+                lumreprotM = M3*M2*M1;
                 lumrepcoord = (lumreprotM*lumrepcoord')';
                 for numb = 1:N*M
                     lumrep{numb} = luminaires{lum};
@@ -728,7 +755,7 @@ try
                 % incidence angle matrices in degree
                 %ang1 = acosd(dot([dosx, dosy, dosz], onormal,2)./sqrt(sum([dosx,dosy,dosz].^2,2)));
                 ang2 = abs(90 - acosd(dot([dcsx, dcsy, dcsz], snormal,2)./sqrt(sum([dcsx,dcsy,dcsz].^2,2))));
-                
+
                 % patch visibility matrix
                 vis = zeros(size(ang2));
                 vis(ang2<=90 & ang2>0) = 1;

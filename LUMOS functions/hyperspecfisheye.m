@@ -55,7 +55,6 @@ hyspec = zeros(reso,reso,numel(lambda));
 
 % loop over surfaces
 for s = 1:numel(surfaces)
-    
     % other surfaces index
     o = 1:numel(surfaces);
     o = o(~(o==s));
@@ -130,21 +129,22 @@ for s = 1:numel(surfaces)
                  end
             end
             % luminaire I and resulting E at observer
-            [Iv,Ev] = ldc2IE(luminaires{lumnum},observer);
+            %[Iv,Ev] = ldc2IE(luminaires{lumnum},observer);
             % find all surfaces of current luminaire
-            lumsurf = [];
+            %lumsurf = [];
             lumI = [];
             lumA = [];
             obsE = [];
             ind1 = [];
             ind2 = [];
             for sn = 1:numel(surfaces)
-                if strcmp(luminaires{lum}.name,surfaces{sn}.name(1:end-2))
+                %[num2str(s),':   ',surfaces{s}.name,'   ', surfaces{sn}.name]
+                if strcmp(luminaires{lumnum}.name,surfaces{sn}.name(1:end-2))
                     % patch visibility matrix, incidence angles, emission angles, distance R
-                    [vis,ina,ema,R,vec1] = pointVisibilityMatrix(P,surfaces{s},[]);
+                    vis = pointVisibilityMatrix(P,surfaces{s},[]);
                     if sum(vis)>0
                         % if visible get patch areas and patch radiant
-                        % intensities and at observer resulting E
+                        % intensities and resulting E at observer 
                         if sn == s
                            ind1 = numel(lumI)+1;
                            ind2 = numel(lumI)+numel(surfaces{s}.mesh.patch_area);
@@ -153,19 +153,18 @@ for s = 1:numel(surfaces)
                         [I,E] = lum2IE(luminaires{lumnum},observer,surfaces{s});
                         lumI = [lumI; I];
                         obsE = [obsE; E];
-
                     end
                 end
             end
             if sum(vis)>0
-                % factors
-                f1 = Ev/sum(obsE);
-                f2 = f1.*lumI./lumA;
-                f2 = f2(ind1:ind2);
+                % radiance
+                lumL = lumI./lumA;
+                lumL = lumL(ind1:ind2)./size(surfaces{s}.mesh.list,1);
+                %lumL = repmat(mean(lumL(ind1:ind2))./numel(lumA(ind1:ind2)),numel(lumA(ind1:ind2)),1);%
                 lamidx = ismember(luminaires{lumnum}.spectrum.data(1,:),lambda);
-                L = ciespec2Y(lambda,luminaires{lumnum}.spectrum.data(2,lamidx));
-                f3 = f2./L;
-                L = f3.*repmat(luminaires{lumnum}.spectrum.data(2,lamidx),numel(f3),1);
+                specL = ciespec2Y(lambda,luminaires{lumnum}.spectrum.data(2,lamidx));
+                factor = lumL./specL;
+                L = factor.*repmat(luminaires{lumnum}.spectrum.data(2,lamidx),numel(factor),1);
             else
                 continue
             end
@@ -183,7 +182,12 @@ for s = 1:numel(surfaces)
     singularity = (-360:90:720)';
     razd = [razd-360; razd; razd+360; singularity];
     reld = [repmat(reld,3,1);repmat(90,numel(singularity),1)];
+    try
     L = [repmat(L,3,1);repmat(L(idx,:),numel(singularity),1)];
+    catch
+        dummy = 1;
+    end
+
     
     % surface polygon
     N = 100;
