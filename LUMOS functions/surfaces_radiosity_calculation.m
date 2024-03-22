@@ -9,10 +9,17 @@
 % radiosity computation.
 
 
-function [calculation,ground,measurements] = surfaces_radiosity_calculation(surfaces,sky,luminaires,ground,information,measurements,MeshOptimization)
+function [calculation,ground,measurements] = surfaces_radiosity_calculation(surfaces,sky,luminaires,ground,information,measurements,settings)
 
-if ~exist('MeshOptimization','var')
-    MeshOptimization = 1;
+% turn off inpolygon warning
+warning('off','MATLAB:inpolygon:ModelingWorldLower')
+
+if ~exist('settings','var')
+    settings.objects = 1;
+    settings.mesh = 1;
+    settings.luminaires = 0;
+    settings.object_reflection = 1;
+    settings.subgrid = 25;
 end
 
 calculation = [];
@@ -90,7 +97,7 @@ try
         
 
         
-        surfaces{s} = Meshing(surfaces{s},density,plot_mode,luminaires,measurements,MeshOptimization);
+        surfaces{s} = Meshing(surfaces{s},density,plot_mode,luminaires,measurements,settings.mesh);
         % surface lambda
         %figure(2)
         if strcmp(surfaces{s}.type,'window') && (isempty(surfaces{s}.material) || isempty(surfaces{s}.material.data))
@@ -266,6 +273,10 @@ try
                     VIS = ones(size(vis));
                     % check if other surfaces block line of sight
                     for nb = n
+
+                        % object and luminaire considaeration
+                        if (strcmp(surfaces{nb}.type,'object') && ~isequal(settings.objects,0)) || (strcmp(surfaces{nb}.type,'luminaire') && ~isequal(settings.luminaires,0))
+
                         
                         % check that blank is not part of surface
                         abort = 0;
@@ -345,6 +356,8 @@ try
                         in(a>1|a<0) = 0;
                         % update 2nd visibility matrix
                         VIS(in) = 0;
+                        
+                        end
                         
                         % debugging plots
                         %{
@@ -458,8 +471,6 @@ try
                     % ground lambda start & stop
                     first = find(skylam==lamstart);
                     last  = find(skylam==lamend);
-                    % TODO: FIX lambda parity
-                    %comeback('ERROR')
                     idx = ismember(ground.lambda,LAMBDA);%skylam(first:last);
                     %sidx = ismember(skylam,LAMBDA);
                     sidx = ismember(LAMBDA,ground.lambda);
@@ -673,19 +684,12 @@ try
             if isequal(mod(M,2),0)
                 M = M+1;
             end
-            % max 25 sub luminaires
-            %{
-            if M>25
-                M = 25;
-            end
-            if N>25
-                N = 25;
-            end
-            %}
-            if M>25 || N>25
+            sublumnum = settings.subgrid;
+            % max number of sub luminaires
+            if M>sublumnum || N>sublumnum
                val = max([M N]);
-               M = round(M/(val/25));
-               N = round(N/(val/25));
+               M = round(M/(val/sublumnum));
+               N = round(N/(val/sublumnum));
             end
             if isequal(mod(N,2),0)
                 N = N+1;
@@ -693,6 +697,14 @@ try
             if isequal(mod(M,2),0)
                 M = M+1;
             end
+
+            % luminaire rotation
+            %lumreprotM = rotMatrix(luminaires{lum}.rotation);
+            a = luminaires{lum}.rotation;
+            M1 = rotMatrixD([1 0 0],a(1));
+            M2 = rotMatrixD([0 1 0],a(2));
+            M3 = rotMatrixD([0 0 1],a(3));
+            lumR = M3*M2*M1;
 
             % if disdimratio criterion is violated - use replacement
             % luminaires - same LDC but more point sources
@@ -703,13 +715,8 @@ try
                 lumrepcoord =  [xgrid(:) ygrid(:) zeros(size(xgrid(:)))];
                 lumrepcoord(:,1) = lumrepcoord(:,1)-dim(1)/2;
                 lumrepcoord(:,2) = lumrepcoord(:,2)-dim(2)/2;
-                %lumreprotM = rotMatrix(luminaires{lum}.rotation);
-                a = luminaires{lum}.rotation;
-                M1 = rotMatrixD([1 0 0],a(1));
-                M2 = rotMatrixD([0 1 0],a(2));
-                M3 = rotMatrixD([0 0 1],a(3));
-                lumreprotM = M3*M2*M1;
-                lumrepcoord = (lumreprotM*lumrepcoord')';
+
+                lumrepcoord = (lumR*lumrepcoord')';
                 for numb = 1:N*M
                     lumrep{numb} = luminaires{lum};
                     lumrep{numb}.geometry{1} = [0 0 0 0 0 0;0 0 0 0 0 0];
@@ -769,14 +776,20 @@ try
                 % vector with all surfaces except actual two surfaces
                 n = 1:numel(surfaces);
                 n(s) = [];
-                % check if other surfaces block line of sight
+
+               
                 for nb = n
-                    
+
                     if strcmp(surfaces{nb}.type,'luminaire')
-                        continue
+                        % if surface belongs to current luminaire -> disregard
+                        if contains(surfaces{nb}.name,luminaires{lum}.name)
+                            continue
+                        end
                     end
-                    
-                    
+
+                    % check if other surfaces block line of sight
+                    if (strcmp(surfaces{nb}.type,'object') && ~isequal(settings.objects,0)) || (strcmp(surfaces{nb}.type,'luminaire') && ~isequal(settings.luminaires,0))
+
                     % plane - line intersection
                     % https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
                     
@@ -854,9 +867,11 @@ try
                          plot3(A(in),B(in),C(in),'.')
                          dummy = 1
                     %}
-                end
+                    end
+
                 % update visibility matrix
                 vis = vis & VIS;
+                end
                 
                 % luminaire rotation in rad
                 [~,Lum_el] = cart2sph(lumrep{lumnum}.normal(1),lumrep{lumnum}.normal(2),lumrep{lumnum}.normal(3));
@@ -1018,10 +1033,16 @@ try
             waitbar(step / steps,wbh,['Reflection: ',num2str(refl),'/',num2str(reflections),' - surface: ',num2str(s),'/',num2str(numel(surfaces))]);
             step = step + 1;
             
+            % disregard windows
             if strcmp(surfaces{s}.type,'window')
                 continue
             end
-            
+
+            % simulate objects reflection?
+            if strcmp(surfaces{s}.type,'object') && isequal(settings.object_reflection,0)
+                continue
+            end
+
             % loop over other walls in room
             othersurfaces = 1:numel(surfaces);
             othersurfaces(s) = [];
@@ -1036,6 +1057,14 @@ try
                 end
                 
                 if strcmp(surfaces{os}.type,'window')
+                    continue
+                end
+
+                if strcmp(surfaces{os}.type,'luminaire') && isequal(settings.luminaires,0)
+                    continue
+                end
+                
+                if strcmp(surfaces{os}.type,'object') && isequal(settings.objects,0)
                     continue
                 end
                 
@@ -1101,6 +1130,9 @@ try
                 VIS = ones(size(vis));
                 % check if other surfaces block line of sight
                 for nb = n
+
+                    % object and luminaire consideration
+                    if (strcmp(surfaces{nb}.type,'object') && ~isequal(settings.objects,0)) || (strcmp(surfaces{nb}.type,'luminaire') && ~isequal(settings.luminaires,0))
                     
                     % check that blank is not part of surface
                     abort = 0;
@@ -1182,6 +1214,8 @@ try
                     in(a>1|a<0) = 0;
                     % update 2nd visibility matrix
                     VIS(in) = 0;
+
+                    end
                     
                     % debugging plots
                     %{
@@ -1335,6 +1369,10 @@ try
     
     
     calculation = surfaces;
+
+
+    % turn on inpolygon warning
+    warning('on','MATLAB:inpolygon:ModelingWorldLower')
     
     
     % observer calculations

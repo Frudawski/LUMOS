@@ -22,7 +22,7 @@ function varargout = spec_simulation(varargin)
 
 % Edit the above text to modify the response to help spec_simulation
 
-% Last Modified by GUIDE v2.5 15-Mar-2023 09:39:45
+% Last Modified by GUIDE v2.5 03-Mar-2024 08:11:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1213,8 +1213,8 @@ switch c
         room{r}.result = [];
     case 5
         room{r}.enable = data{r,c};
-    case 6 
-        room{r}.MeshOptimization = data{r,c}; 
+    %case 6 
+    %    room{r}.MeshOptimization = data{r,c}; 
     otherwise
 end
 
@@ -3657,6 +3657,7 @@ data.material = getappdata(handles.Lumos,'material');
 data.results = getappdata(handles.Lumos,'result');
 data.ldt = getappdata(handles.Lumos,'ldt');
 data.spectra = getappdata(handles.Lumos,'spectra');
+data.settings = getappdata(handles.Lumos,'settings');
 % save data
 save([path file],'data');
 handles.save_file = [path file];
@@ -3712,9 +3713,14 @@ catch
     setappdata(handles.Lumos,'spectra',[]);
 end
 try
-setappdata(handles.Lumos,'result',data.results);
+    setappdata(handles.Lumos,'result',data.results);
 catch
     setappdata(handles.Lumos,'result',[]);
+end
+try
+    setappdata(handles.Lumos,'settings',data.settings);
+catch
+    setappdata(handles.Lumos,'settings',[]);
 end
 
 for l = 1:max(size(data.room))
@@ -5878,8 +5884,9 @@ sky  = getappdata(handles.Lumos,'sky');
 % save simulation table mode
 table = getappdata(handles.Lumos,'table');
 table{handles.data.room}.table_mode = 'simulation';
+settings = getappdata(handles.Lumos,'settings');
 
-% start simulation
+% START SIMULATION
 tic
 axes(handles.topview)
 result = [];
@@ -5977,12 +5984,12 @@ for r = 1:numel(room)
             % actual radiosity simulation
             if (s~= 0 || ~isempty(luminaires))
                 
-                try
-                    MeshOptimization = room{r}.MeshOptimization;
-                catch
-                    MeshOptimization = 1;
-                end
-                [calculation,ground,measurements] = surfaces_radiosity_calculation(surfaces,skydata,luminaires,ground,information,measurements,MeshOptimization);
+                %try
+                %    MeshOptimization = room{r}.MeshOptimization;
+                %catch
+                %    MeshOptimization = 1;
+                %end
+                [calculation,ground,measurements] = surfaces_radiosity_calculation(surfaces,skydata,luminaires,ground,information,measurements,settings);
                 
                 % save calculation
                 result{r}.sky{s+1} = calculation;
@@ -6822,6 +6829,7 @@ for r = 1:size(room,2)
     catch
         list{5,r} = 0;
     end
+    %{
     try
         list{6,r} = room{r}.MeshOptimization;
         if isempty(list{6,r})
@@ -6830,12 +6838,13 @@ for r = 1:size(room,2)
     catch
         list{6,r} = 1;
     end
+    %}
     check = 0;
 
 end
     
 rows = [];
-rows = {'dens','refl','N°','h','sim','opt'};
+rows = {'dens','refl','N°','h','sim'}; % ,'opt'
 
 
 columns = [];
@@ -11678,3 +11687,16 @@ if file==0
     return
 end
 save([path file],'hyperspec');
+
+
+% --------------------------------------------------------------------
+function Options_ClickedCallback(hObject, eventdata, handles)
+% hObject    handle to Options (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+try
+    LUMOS_options(hObject, eventdata, handles, 1)
+catch
+end
+
