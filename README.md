@@ -93,7 +93,7 @@ LUMOS workflow is from left to right in the tab menu.
 ### LUMOS:
 Rudawski, Frederic, *The spectral radiosity simulation program LUMOS for lighting research applications*, In: Proceedings LICHT 2023 – 25th European Lighting Congress, pp. 110-115, 2023.
 
-Rudawski, Frederic, *The spectral radiosity simulation program LUMOS*, version 1.12, 2022, URL: https://github.com/Frudawski/LUMOS. DOI: 10.5281/zenodo.7275808
+Rudawski, Frederic, *The spectral radiosity simulation program LUMOS*, version 1.14, 2022, URL: https://github.com/Frudawski/LUMOS. DOI: 10.5281/zenodo.7275808
 
 ### Lighting Toolbox:
 Rudawski, Frederic, *The Lighting Toolbox for Matlab and Octave*, 2022, URL: https://github.com/Frudawski/LightingToolbox. DOI: 10.5281/zenodo.7457041
