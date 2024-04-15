@@ -5989,6 +5989,15 @@ for r = 1:numel(room)
                 %catch
                 %    MeshOptimization = 1;
                 %end
+
+                if isempty(settings)
+                    settings.objects = 1;
+                    settings.mesh = 1;
+                    settings.luminaires = 0;
+                    settings.object_reflection = 1;
+                    settings.subgrid = 25;
+                end
+
                 [calculation,ground,measurements] = surfaces_radiosity_calculation(surfaces,skydata,luminaires,ground,information,measurements,settings);
                 
                 % save calculation
